@@ -900,8 +900,10 @@ async function buscarProveedor() {
     return;
   }
   btn.disabled = true;
-  btn.innerHTML = '<svg width="16" height="16" class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Buscando...';
-  info.style.display = 'none';
+  btn.innerHTML = '<svg width="16" height="16" class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Consultando...';
+  info.style.display = 'block';
+  info.className = 'prov-card warn';
+  info.innerHTML = '<div style="color:#92400E;font-size:12px">Conectando con el servidor, puede tardar unos segundos si estuvo inactivo...</div>';
   manual.style.display = 'none';
 
   try {

@@ -80,6 +80,10 @@ def get_conn():
         cfg = DB_CONFIG.copy(); cfg['host'] = '4.246.223.171'
         return psycopg2.connect(**cfg)
 
+@app.route('/ping')
+def ping():
+    return 'ok', 200
+
 @app.route('/')
 def index():
     grupos = {}
