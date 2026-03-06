@@ -206,6 +206,60 @@
       background-size: 16px;
     }
 
+    /* ── CONCEPTO CUSTOM DROPDOWN ── */
+    .concepto-wrap { position: relative; }
+    .concepto-trigger {
+      width: 100%; min-height: 48px;
+      background: var(--fd-bg);
+      border: 1px solid rgba(203,213,225,0.5);
+      border-radius: 12px;
+      padding: 11px 40px 11px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      color: var(--fd-dark);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: border-color 0.2s; box-sizing: border-box;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+    }
+    .concepto-trigger:hover, .concepto-trigger.open { border-color: var(--fd-navy); }
+    .concepto-panel {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #fff; border: 1px solid rgba(203,213,225,0.7);
+      border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+      z-index: 200; max-height: 340px;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .concepto-search-row {
+      padding: 10px; border-bottom: 1px solid rgba(203,213,225,0.4); flex-shrink: 0;
+    }
+    .concepto-search-input {
+      width: 100%; height: 36px;
+      border: 1px solid rgba(203,213,225,0.6); border-radius: 8px;
+      padding: 0 12px; font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none; box-sizing: border-box; color: var(--fd-dark);
+    }
+    .concepto-search-input:focus { border-color: var(--fd-navy); }
+    .concepto-options { overflow-y: auto; flex: 1; }
+    .concepto-group-label {
+      padding: 7px 12px 3px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--fd-slate-light); background: #F8FAFC; position: sticky; top: 0;
+    }
+    .concepto-option {
+      padding: 9px 14px; font-size: 11.5px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer; border-left: 2px solid transparent;
+      line-height: 1.4; color: var(--fd-dark);
+    }
+    .concepto-option:hover  { background: #F1F5F9; border-left-color: var(--fd-pink); }
+    .concepto-option.sel    { background: #FFF1F3; border-left-color: var(--fd-pink); color: var(--fd-pink); font-weight: 600; }
+    .concepto-option .opt-pct { font-weight: 700; color: var(--fd-navy); margin-right: 5px; }
+    .concepto-option.sel .opt-pct { color: var(--fd-pink); }
+    .concepto-no-results { padding: 18px; text-align: center; color: #94A3B8; font-size: 12px; }
+
     /* ── BUTTONS ── */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -629,18 +683,33 @@
       <!-- Concepto DESPUÉS -->
       <div class="section-label" style="margin-top:20px">Concepto de pago</div>
       <div class="section-divider"></div>
-      <select class="select" id="concepto" onchange="onConcepto()">
+
+      <!-- Select oculto como fuente de datos -->
+      <select id="concepto" style="display:none" onchange="onConcepto()">
         <option value="">-- Selecciona el concepto --</option>
         {% for grupo, items in grupos.items() %}
-        <optgroup label="── {{ grupo }}">
+        <optgroup label="{{ grupo }}">
           {% for c in items %}
-          <option value="{{ c.cod }}" data-pct="{{ c.pct_ir }}" data-tipo="{{ c.tipo }}">
-            {% if c.pct_ir == 0 %}0%{% else %}{{ c.pct_ir }}%{% endif %} &nbsp;—&nbsp; {{ c.desc }}
-          </option>
+          <option value="{{ c.cod }}" data-pct="{{ c.pct_ir }}" data-tipo="{{ c.tipo }}">{{ c.desc }}</option>
           {% endfor %}
         </optgroup>
         {% endfor %}
       </select>
+
+      <!-- Dropdown personalizado con búsqueda -->
+      <div class="concepto-wrap" id="concepto-wrap">
+        <div class="concepto-trigger" id="concepto-trigger" onclick="toggleConceptoPanel()">
+          <span id="concepto-trigger-text" style="color:#94A3B8;flex:1">-- Selecciona el concepto --</span>
+        </div>
+        <div class="concepto-panel" id="concepto-panel" style="display:none">
+          <div class="concepto-search-row">
+            <input class="concepto-search-input" id="concepto-search" type="text"
+              placeholder="Buscar por descripción o código..."
+              oninput="renderConceptoOptions(this.value)" autocomplete="off">
+          </div>
+          <div class="concepto-options" id="concepto-options"></div>
+        </div>
+      </div>
 
       <!-- Badge concepto -->
       <div class="concepto-badge" id="concepto-badge">
@@ -959,10 +1028,74 @@ function onConcepto() {
   const badge = document.getElementById('concepto-badge');
   badge.style.display = 'block';
   document.getElementById('badge-pct').textContent = pct + '%';
-  document.getElementById('badge-desc').textContent = opt.text.replace(/^\d+(\.\d+)?%\s*—\s*/, '');
+  document.getElementById('badge-desc').textContent = opt.text;
   document.getElementById('badge-cod').textContent = 'Código ' + opt.value;
   document.getElementById('num2').className = 'step-num done';
   actualizarHint();
+}
+
+// ── Dropdown personalizado concepto ──
+function toggleConceptoPanel() {
+  const panel = document.getElementById('concepto-panel');
+  const trigger = document.getElementById('concepto-trigger');
+  const isOpen = panel.style.display !== 'none';
+  if (isOpen) {
+    panel.style.display = 'none';
+    trigger.classList.remove('open');
+  } else {
+    panel.style.display = 'flex';
+    trigger.classList.add('open');
+    const inp = document.getElementById('concepto-search');
+    inp.value = '';
+    renderConceptoOptions('');
+    setTimeout(() => inp.focus(), 50);
+  }
+}
+
+function renderConceptoOptions(q) {
+  const sel = document.getElementById('concepto');
+  const container = document.getElementById('concepto-options');
+  const currentVal = sel.value;
+  q = (q || '').toLowerCase();
+  let html = '';
+
+  sel.querySelectorAll('optgroup').forEach(grp => {
+    if (grp.hidden) return;
+    const opts = [...grp.querySelectorAll('option')].filter(o => {
+      if (o.hidden) return false;
+      if (!q) return true;
+      return o.text.toLowerCase().includes(q) || o.value.toLowerCase().includes(q);
+    });
+    if (!opts.length) return;
+    html += `<div class="concepto-group-label">${grp.label}</div>`;
+    opts.forEach(opt => {
+      const pct = parseFloat(opt.getAttribute('data-pct'));
+      const pctStr = pct === 0 ? '0%' : pct + '%';
+      const isSel = opt.value === currentVal;
+      html += `<div class="concepto-option${isSel ? ' sel' : ''}" onclick="selectConcepto('${opt.value}')">
+        <span class="opt-pct">${pctStr}</span>${opt.text}
+      </div>`;
+    });
+  });
+
+  container.innerHTML = html || '<div class="concepto-no-results">Sin resultados para tu búsqueda</div>';
+}
+
+function selectConcepto(cod) {
+  const sel = document.getElementById('concepto');
+  sel.value = cod;
+  document.getElementById('concepto-panel').style.display = 'none';
+  document.getElementById('concepto-trigger').classList.remove('open');
+  document.getElementById('concepto-search').value = '';
+
+  const opt = sel.options[sel.selectedIndex];
+  const triggerText = document.getElementById('concepto-trigger-text');
+  if (opt && opt.value) {
+    const pct = parseFloat(opt.getAttribute('data-pct'));
+    triggerText.textContent = (pct === 0 ? '0%' : pct + '%') + ' — ' + opt.text;
+    triggerText.style.color = 'var(--fd-dark)';
+  }
+  onConcepto();
 }
 
 function setTipo(t) {
@@ -970,20 +1103,21 @@ function setTipo(t) {
   document.getElementById('btn-bien').className = 'tipo-btn' + (t==='bien' ? ' active' : '');
   document.getElementById('btn-servicio').className = 'tipo-btn' + (t==='servicio' ? ' active' : '');
 
-  // Filtrar opciones del concepto según tipo
   const sel = document.getElementById('concepto');
   sel.querySelectorAll('option[data-tipo]').forEach(opt => {
     const opTipo = opt.getAttribute('data-tipo');
     opt.hidden = (opTipo === 'bien' && t === 'servicio') || (opTipo === 'servicio' && t === 'bien');
   });
-  // Ocultar optgroups vacíos
   sel.querySelectorAll('optgroup').forEach(grp => {
     grp.hidden = [...grp.querySelectorAll('option')].every(o => o.hidden);
   });
-  // Si el concepto seleccionado ya no aplica, limpiar selección
+  // Si el concepto seleccionado ya no aplica, limpiar
   const selOpt = sel.options[sel.selectedIndex];
   if (selOpt && selOpt.hidden) {
     sel.value = '';
+    const triggerText = document.getElementById('concepto-trigger-text');
+    triggerText.textContent = '-- Selecciona el concepto --';
+    triggerText.style.color = '#94A3B8';
     document.getElementById('concepto-badge').style.display = 'none';
   }
   actualizarHint();
@@ -1132,7 +1266,15 @@ function renderResultado(d) {
 }
 
 document.getElementById('ruc').addEventListener('keydown', e => { if(e.key==='Enter') buscarProveedor(); });
-// Aplicar filtro inicial al cargar (bien por defecto)
+// Cerrar panel concepto al hacer click fuera
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('concepto-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('concepto-panel').style.display = 'none';
+    document.getElementById('concepto-trigger').classList.remove('open');
+  }
+});
+// Filtro inicial al cargar (bien por defecto)
 setTipo('bien');
 </script>
 </body>
