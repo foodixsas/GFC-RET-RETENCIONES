@@ -853,6 +853,7 @@ async function buscarProveedor() {
     const estadoOk = (data.estado || '').toUpperCase() === 'ACTIVO';
     info.className = 'prov-card ok';
     info.style.display = 'block';
+    info.innerHTML = '<div class="prov-name" id="prov-nombre"></div><div class="prov-ruc" id="prov-ruc"></div><div class="pills" id="prov-pills"></div><div class="prov-actividad" id="prov-actividad"></div>';
     document.getElementById('prov-nombre').textContent = data.razon_social || ruc;
     document.getElementById('prov-ruc').textContent = 'RUC: ' + data.ruc;
 
