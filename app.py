@@ -21,7 +21,7 @@ CONCEPTOS = [
     ('Bienes y Transporte',     '312A',       'Bienes agricolas — PRODUCTOR DIRECTO (carne, pollo, hortalizas del campo)',             1.0,  'bien'),
     ('Bienes y Transporte',     '310',        'Transporte de carga / pasajeros (flete, delivery)',                                     1.0,  'servicio'),
     ('Bienes y Transporte',     '312C',       'Bienes agricolas — COMERCIALIZADOR (distribuidora, no productor directo)',              1.75, 'bien'),
-    ('Bienes y Transporte',     '312',        'Bienes muebles — insumos, bebidas, materiales (Pronaca, Coca-Cola, Arca...)',           2.0,  'bien'),
+    ('Bienes y Transporte',     '312',        'Bienes muebles — insumos, bebidas, materiales',           2.0,  'bien'),
     ('Servicios Generales',     '343A',       'Energia electrica (CNEL, EEQ)',                                                         2.0,  'servicio'),
     ('Servicios Generales',     '322',        'Seguros y reaseguros',                                                                  2.0,  'servicio'),
     ('Servicios Generales',     '307',        'Servicios PN mano de obra (tecnico, mantenimiento, limpieza, operario)',                3.0,  'servicio'),

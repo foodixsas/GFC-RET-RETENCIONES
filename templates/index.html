@@ -560,7 +560,7 @@
       <div class="section-label">RUC del proveedor</div>
       <div class="section-divider"></div>
       <div class="ruc-row">
-        <input class="input" id="ruc" type="text" maxlength="13" placeholder="Ej: 1793168604001"
+        <input class="input" id="ruc" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="13" placeholder="Ej: 1793168604001"
                oninput="this.value=this.value.replace(/\D/g,'')"
                onkeydown="if(event.key==='Enter') buscarProveedor()">
         <button class="btn btn-primary" onclick="buscarProveedor()" id="btn-buscar">
@@ -587,7 +587,7 @@
           <option value="">-- Selecciona una opcion --</option>
           <optgroup label="SOCIEDADES">
             <option value="SOCIEDAD|NO|NO|GENERAL|NO">Sociedad comun (Cia. Ltda., S.A., S.A.S.)</option>
-            <option value="SOCIEDAD|SI|NO|GENERAL|NO">Contribuyente Especial (Pronaca, Coca-Cola...)</option>
+            <option value="SOCIEDAD|SI|NO|GENERAL|NO">Contribuyente Especial</option>
             <option value="SOCIEDAD|NO|NO|GENERAL|SI">Gran Contribuyente — 0% IR y 0% IVA</option>
             <option value="PUBLICA|NO|NO|PUBLICA|NO">Entidad / Empresa Publica (CNEL, EEQ)</option>
           </optgroup>
@@ -868,7 +868,14 @@ async function buscarProveedor() {
 
     const act = data.actividad_economica || '';
     document.getElementById('prov-actividad').textContent =
-      act && act !== 'PERSONA NATURAL' ? act.substring(0,100) + (act.length>100?'…':'') : '';
+      act && act !== 'PERSONA NATURAL' ? act : '';
+
+    if (!estadoOk) {
+      const warn = document.createElement('div');
+      warn.style.cssText = 'margin-top:10px;padding:10px 12px;background:#FEF2F2;border:1.5px solid #F43F5E;border-radius:8px;color:#B91C1C;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px';
+      warn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg> RUC SUSPENDIDO — No se puede emitir retención a este proveedor.';
+      document.getElementById('prov-actividad').after(warn);
+    }
 
     document.getElementById('num1').className = 'step-num done';
     actualizarHint();
@@ -969,6 +976,7 @@ async function calcular() {
   const cod      = document.getElementById('concepto').value;
 
   if (!prov)      { mostrarError('Primero consulta el RUC del proveedor (Paso 1)'); return; }
+  if ((prov.estado||'').toUpperCase() !== 'ACTIVO') { mostrarError('No se puede generar la retención: el RUC está SUSPENDIDO. Verifica con el proveedor antes de proceder.'); return; }
   if (!cod)       { mostrarError('Selecciona el concepto de pago (Paso 2)'); return; }
   if (subtotal<=0){ mostrarError('Ingresa el subtotal de la factura (Paso 3)'); return; }
 
