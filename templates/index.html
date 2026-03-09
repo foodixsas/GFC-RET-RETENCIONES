@@ -920,6 +920,17 @@ async function buscarProveedor() {
       prov = null; actualizarHint(); return;
     }
 
+    // RUC marcado como no encontrado por el scraper SRI
+    if ((data.razon_social || '').toUpperCase() === 'RUC NO ENCONTRADO') {
+      info.className = 'prov-card err';
+      info.style.display = 'block';
+      info.innerHTML = `
+        <div style="color:var(--fd-pink);font-size:13px;font-weight:700;margin-bottom:6px">RUC NO ENCONTRADO EN EL SRI</div>
+        <div style="color:#64748B;font-size:12px">El RUC <strong>${ruc}</strong> no genera resultados en el SRI. Verifica que el número sea correcto.</div>
+      `;
+      prov = null; actualizarHint(); return;
+    }
+
     prov = data;
     manual.style.display = 'none';
 
