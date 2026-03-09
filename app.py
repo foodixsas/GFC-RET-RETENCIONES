@@ -8,16 +8,18 @@ import urllib.request
 app = Flask(__name__)
 
 def keep_alive():
-    time.sleep(10)
+    time.sleep(30)
     url = (os.environ.get('RENDER_EXTERNAL_URL') or 'https://gfc-ret-retenciones.onrender.com').rstrip('/')
     while True:
         try:
-            urllib.request.urlopen(url + '/ping', timeout=15)
+            req = urllib.request.Request(url + '/ping', headers={'User-Agent': 'keep-alive'})
+            urllib.request.urlopen(req, timeout=10)
         except:
             pass
-        time.sleep(60)  # cada 1 minuto
+        time.sleep(60)
 
-threading.Thread(target=keep_alive, daemon=True).start()
+t = threading.Thread(target=keep_alive, daemon=True)
+t.start()
 
 DB_CONFIG = {
     'host': os.environ.get('DB_HOST', 'chiosburguer.postgres.database.azure.com'),
