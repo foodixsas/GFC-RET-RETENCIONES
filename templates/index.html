@@ -915,7 +915,7 @@ async function buscarProveedor() {
 
     if (!res.ok) {
       mostrarProvWarn(ruc);
-      manual.style.display = 'block';
+      manual.style.display = 'none';
       prov = null; actualizarHint(); return;
     }
 
