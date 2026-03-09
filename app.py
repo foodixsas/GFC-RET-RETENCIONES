@@ -15,7 +15,7 @@ def keep_alive():
             urllib.request.urlopen(url + '/ping', timeout=15)
         except:
             pass
-        time.sleep(300)  # cada 5 minutos
+        time.sleep(60)  # cada 1 minuto
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
